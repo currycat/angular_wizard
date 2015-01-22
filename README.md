@@ -1,108 +1,112 @@
-#Demo de Popovers <z-popover></z-popover>
+#Demo de wizards
+* **wizard.js**
+* **wizard.html**: template común a todos los wizards (botones de avanzar, retroceder, indicar el paso en el que estás...)
 
-Directiva para crear popovers de UIBootstrap con contenido proveniente de un template de angular y asociándole un controller (o no). Permite indicarle:
-
-- placement: lugar donde aparecerá el popover. Por defecto bottom
-- trigger: evento que dispara el popover. Valores conocidos:
-	- click (valor por defecto)
-	- hover
-	- focus: se abre al clicar (al recibi el foco) y se cerrará al pulsar sobre otro elemento (o un elemento del popup). Hace falta indicarle el tabindex del elemento)
-- template: ruta del template html
-- controller (opcional): controller que gestionará la lógica ligada al template.
-
-##Ejemplos
-
-###Plantillas y controllers
-Imaginemos que tenemos 2 plantillas y 1 controller
-
-#####popover.html
+Uso:
 
 ```
-<img width="300" src="https://31.media.tumblr.com/8ea823e5d57fb51d02c755b2f959dc9c/tumblr_mi6vbkd5og1qbcq3wo1_500.gif">
+<wizard controller="wizard1Ctrl"></wizard>
 ```
 
-#####popover2.html**
+Donde **wizard1Ctrl** es el nombre del controlador del wizard
+
+Ejemplo de wizard.html
 
 ```
-<img width="100" src="https://s-media-cache-ak0.pinimg.com/236x/2c/57/8d/2c578d5c9928ca63836c3fe0e8ccd13b.jpg">
-<br><br>
-<span ng-repeat="item in datasource track by item.id" ng-click="item.callback()">
-	<i ng-if="item.icon" class="icon {{item.icon}}"></i> {{item.label}}<br>
-</span>
-<br>
-<button class="btn btn-primary btn-sm" ng-click="gotIt()">Got it fistro</button>
+< div class="row">
+  <h1>Wizard <small>step: {{currentStep.id}}/{{wizard.length}}</small></h1>
 
+  <div ng-include src="currentStep.template"></div>
+  <hr>
+  <button ng-if="currentStep.previousStep" ng-click="setStep(currentStep.previousStep)" class="btn btn-default">Previous</button>
+  <button ng-if="currentStep.nextStep" ng-click="setStep(currentStep.nextStep)" class="btn btn-primary">Next</button>
+
+  <button ng-if="currentStep.finish" ng-click="finish()" class="btn btn-success">Submit</button>
+  <button ng-if="currentStep.restart" ng-click="restart()" class="btn btn-default">Start again</button>
+
+</div>
 ```
 
-#####Controller 'popover.test'
+Ejemplo de controlador:
 
 ```
-angular.module('testApp').controller('popover.test', function ($scope, $log, $window) {
+angular.module('testApp').controller('wizard1Ctrl', function ($scope, $window, $log) {
 
-  var addItem = function () {
-    $window.alert('ADD ITEM');
-  };
-
-  var showInfo = function () {
-    $window.alert('SHOW INFO');
-  };
-
-  $scope.datasource = [
+  $scope.wizard = [
     {
-      id: 0,
-      icon: 'ion-plus-circled',
-      label: 'añadir...',
-      callback: addItem
-    }, {
       id: 1,
-      icon: 'ion-information-circled',
-      label: 'mostrar info',
-      callback: showInfo
+      template: 'scripts/controllers/step0.html',
+      nextStep: 2
+    },
+    {
+      id: 2,
+      template: 'scripts/controllers/step1.html',
+      nextStep: 3,
+      previousStep: 1
+    }, {
+      id: 3,
+      template: 'scripts/controllers/step2.html',
+      previousStep: 2,
+      nextStep: 4
+    },
+    {
+      id: 4,
+      template: 'scripts/controllers/step3.html',
+      previousStep: 3,
+      restart: 1,
+      finish: 1
     }
   ];
 
-  $scope.gotIt = function () {
-    $window.alert('Fistroooooor');
+  $scope.wizardData = {};
+
+  $scope.setStep = function (step) {
+    $scope.currentStep = $scope.wizard[step - 1];
   };
+
+  $scope.restart = function () {
+
+    $scope.wizardData = {
+      step1: {
+        nombre: ''
+      },
+      step2: {
+        nombre: ''
+      },
+      step3: {
+        nombre: ''
+      },
+    };
+    $scope.setStep(1);
+
+  };
+
+  $scope.finish = function () {
+    $window.alert('Submitting...');
+  };
+
+  $scope.setStep(1);
 
 });
 ```
 
+Donde:
 
+* **$scope.wizard** es la configuración del wizard (paso del wizard, template, paso siguiente, paso anterior, paso que finaliza, paso que puede resetear...)
+* **$scope.wizardData**: objeto donde se almacenan los posibles inputs del wizard
 
-###Ejemplo.1: Botón que muestra un popover con acciones y que con dismiss al perder el foco 
-
-```
-<z-popover tabindex="0" class="btn btn-default" placement="bottom" template="scripts/controllers/popover2.html" controller="popover.test" trigger="focus">Pasa por encima</z-popover>
-```
-
-Si cambiamos trigger="click", no se esconderá hasta que volvamos a pulsar el botón (comportamiento por defecto si no se especifica trigger)
-
-###Ejemplo.2: texto que muestra un popover "informativo" que se muestra al hacer hover
+Ejemplo de plantilla de uno de los pasos del wizard (step1.html):
 
 ```
-<z-popover placement="right" template="scripts/controllers/popover.html" trigger="hover"><strong>Soy un texto que activa PopZilla si pasas por encima</strong></z-popover>
-```
-Como este popup no tiene acciones, no especificamos el controller
-
-
-###Ejemplo.3: mismo texto informativo, pero esta vez en un dropdown
+	<h5>Bla bla bla</h5>
+	Soy el template step0.html
+	<br>
+	<input ng-model="wizardData.step1.nombre">
 
 ```
-< div class="dropdown">
-  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-    Dropdown
-    <span class="caret"></span>
-  </button>
-  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Another action</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><z-popover placement="right" template="scripts/controllers/popover.html" trigger="hover">PopZilla Hover</z-popover></a></li>
 
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Something else here</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Separated link</a></li>
-  </ul>
-< /div>
-```
+
+
 
 
 
