@@ -1,0 +1,9 @@
+<div>
+<img width="100" src="https://s-media-cache-ak0.pinimg.com/236x/2c/57/8d/2c578d5c9928ca63836c3fe0e8ccd13b.jpg">
+<br><br>
+<span ng-repeat="item in datasource track by item.id" ng-click="item.callback()">
+	<i ng-if="item.icon" class="icon {{item.icon}}"></i> {{item.label}}<br>
+</span>
+<br>
+<button class="btn btn-primary btn-sm" ng-click="gotIt()">Got it fistro</button>
+</div>

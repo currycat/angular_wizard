@@ -1,0 +1,12 @@
+<div class="row">
+  <h1>Wizard <small>step: {{currentStep.id}}/{{wizard.length}}</small></h1>
+
+  <div ng-include src="currentStep.template"></div>
+  <hr>
+  <button ng-if="currentStep.previousStep" ng-click="setStep(currentStep.previousStep)" class="btn btn-default">Previous</button>
+  <button ng-if="currentStep.nextStep" ng-click="setStep(currentStep.nextStep)" class="btn btn-primary">Next</button>
+
+  <button ng-if="currentStep.finish" ng-click="finish()" class="btn btn-success">Submit</button>
+  <button ng-if="currentStep.restart" ng-click="restart()" class="btn btn-default">Start again</button>
+
+</div>
